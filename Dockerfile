@@ -22,6 +22,7 @@ RUN sed -i 's/BLAS := atlas/BLAS := open/g' Makefile.config
 
 # Caffe's Python dependencies...
 RUN pip install -r python/requirements.txt
+RUN pip install numpy --upgrade
 RUN make all
 RUN make pycaffe
 ENV PYTHONPATH=/caffe/python

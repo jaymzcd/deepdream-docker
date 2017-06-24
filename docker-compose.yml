@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+
+  data:
+    image: tianon/true
+    volumes:
+     - ./shared:/data
+
+  dreamer:
+    build: deepdream/latest
+    command: python -u deepdream/deepdream.py
+    volumes:
+     - './:/deepdream'
+    volumes_from:
+     - data     

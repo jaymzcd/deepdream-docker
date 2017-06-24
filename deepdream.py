@@ -10,7 +10,10 @@ from IPython.display import clear_output, Image, display
 from google.protobuf import text_format
 import time
 
+os.environ['GLOG_minloglevel'] = '2' 
+
 import caffe
+
 
 def showarray(a):
     a = np.uint8(np.clip(a, 0, 255))
@@ -43,6 +46,7 @@ param_fn = model_path + 'bvlc_googlenet.caffemodel'
 
 # Patching model to be able to compute gradients.
 # Note that you can also manually add "force_backward: true" line to "deploy.prototxt".
+
 model = caffe.io.caffe_pb2.NetParameter()
 text_format.Merge(open(net_fn).read(), model)
 model.force_backward = True
@@ -130,27 +134,32 @@ if not os.path.exists("/data/output/tmp"):
 print "This might take a little while..."
 print "Generating first sample..."
 step_one = deepdream(net, img)
-PIL.Image.fromarray(np.uint8(step_one)).save("/data/output/step_one.jpg")
 
-print "Generating second sample..."
-step_two = deepdream(net, img, end='inception_3b/5x5_reduce')
-PIL.Image.fromarray(np.uint8(step_two)).save("/data/output/step_two.jpg")
+infile = os.path.splitext(os.path.basename(input_file))[0]
+step_one_filename = os.path.join('/data/output/', '{}_step_one.jpg'.format(infile))
+step_two_filename = os.path.join('/data/output/', '{}_step_two.jpg'.format(infile))
 
-frame = img
-frame_i = 0
+PIL.Image.fromarray(np.uint8(step_one)).save(step_one_filename)
 
-h, w = frame.shape[:2]
-s = float(scale) # scale coefficient
-print "Entering dream mode..."
-print "Iterations = %s" % iterations
-print "Scale = %s" % scale
-print "Model = %s" % model_name
-for i in xrange(int(iterations)):
-    print "Step %d of %d is starting..." % (i, int(iterations))
-    frame = deepdream(net, frame, end=model_name)
-    PIL.Image.fromarray(np.uint8(frame)).save("/data/output/%04d.jpg"%frame_i)
-    frame = nd.affine_transform(frame, [1-s,1-s,1], [h*s/2,w*s/2,0], order=1)
-    frame_i += 1
-    print "Step %d of %d is complete." % (i, int(iterations))
+# print "Generating second sample..."
+# step_two = deepdream(net, img, end='inception_3b/5x5_reduce')
+# PIL.Image.fromarray(np.uint8(step_two)).save(step_two_filename)
 
-print "All done! Check the /output folder for results"
+# frame = img
+# frame_i = 0
+
+# h, w = frame.shape[:2]
+# s = float(scale) # scale coefficient
+# print "Entering dream mode..."
+# print "Iterations = %s" % iterations
+# print "Scale = %s" % scale
+# print "Model = %s" % model_name
+# for i in xrange(int(iterations)):
+#     print "Step %d of %d is starting..." % (i, int(iterations))
+#     frame = deepdream(net, frame, end=model_name)
+#     PIL.Image.fromarray(np.uint8(frame)).save("/data/output/%04d.jpg"%frame_i)
+#     frame = nd.affine_transform(frame, [1-s,1-s,1], [h*s/2,w*s/2,0], order=1)
+#     frame_i += 1
+#     print "Step %d of %d is complete." % (i, int(iterations))
+
+# print "All done! Check the /output folder for results"
